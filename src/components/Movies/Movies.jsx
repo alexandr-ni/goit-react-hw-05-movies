@@ -1,7 +1,7 @@
 import { Loader } from 'components/Loader/Loader';
 import { fetchMovieBySearch } from 'components/api';
 import { useMovieParams } from 'hooks/useMovieParams';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 const Movies = () => {
@@ -11,6 +11,7 @@ const Movies = () => {
   const query = searchParams.get('query' ?? '');
 
   const { movies, setMovies, loading, setLoading } = useMovieParams();
+  const [movieInput, setMovieInput] = useState('');
 
   useEffect(() => {
     if (searchParams === '') {
@@ -22,6 +23,7 @@ const Movies = () => {
         setLoading(true);
         const fetchedMovies = await fetchMovieBySearch(query);
 
+        setMovieInput(query);
         setMovies(fetchedMovies.results);
       } catch (error) {
         console.log('ERROR');
@@ -33,17 +35,25 @@ const Movies = () => {
     fetchMovieByInput();
   }, [setMovies, setLoading, searchParams, query]);
 
+  const changeInput = evt => {
+    setMovieInput(evt.target.value);
+  };
+
   return (
     <div>
       <hr />
       <form
         onSubmit={evt => {
           evt.preventDefault();
-          searchParams.set('query', evt.target.elements.filmInput.value);
+          searchParams.set('query', movieInput);
           setSearchParams(searchParams);
         }}
       >
-        <input type="text" name="filmInput" />
+        <input
+          type="text"
+          onChange={changeInput}
+          value={movieInput ? movieInput : ''}
+        />
         <button type="submit">Search</button>
       </form>
       {loading && <Loader />}
